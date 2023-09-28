@@ -37,6 +37,8 @@
       allowUDPPorts = [ 21027 22000 ];
     };
     hostName = "rog1";
+    # use  'head -c4 /dev/urandom | od -A none -t x4' to generate a unique hostId
+    hostid = "47867bd9";
     useNetworkd = true;
     wireless = {
       userControlled.enable = true;

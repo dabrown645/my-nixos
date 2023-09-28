@@ -1,8 +1,8 @@
-DISK1="${1}"
+DISK="${1}"
 
 # Zap disks data structures to prepare for installation
-blkdiscard -f ${DISK1}
-sgdisk -Z ${DISK1}
+blkdiscard -f ${DISK}
+sgdisk -Z ${DISK}
 
 # When configuring boot.loader.grub.mirroredBoots.*.devices use the shorter UUID
 # rather than the larger one.
@@ -14,10 +14,10 @@ sgdisk -Z ${DISK1}
 # Creating partitions
 # This creates the ESP / boot partition at the beginning of
 # the drive but numbered as the third partition:
-sgdisk -n3:1M+1G -t3:EF00 ${DISK1}
+sgdisk -n3:1M+:1G -t3:EF00 ${DISK}
 
 # This creates the storage partition numbered as the first partition
-sgdisk -n1:0:0 -t1:BF01 ${DISK1}
+sgdisk -n1:0:0 -t1:BF01 ${DISK}
 
 sync
 udevadm settle
@@ -50,11 +50,10 @@ udevadm settle
 zpool create -f \
   -O mountpoint=none \
   -O atime=off \
-  -O ashift=12 \
   -O acltype=posixacl \
   -O xattr=sa \
   -O compression=lz4 \
-  zroot ${DISK1}-part1
+  zroot ${DISK}1
 
 
 # Create ZFS datasets
@@ -64,7 +63,7 @@ zfs create -o mountpoint=legacy zroot/home      # for /home
 zfs create -o mountpoint=legacy zroot/nix       # for /nix
 
 # Create ESP partition
-mkfs.vfat -F 32 ${DISK1}-part3
+mkfs.vfat -F 32 ${DISK}3
 
 # Mount new ZFS pool
 mount -t zfs zroot/root /mnt
@@ -76,8 +75,8 @@ mkdir /mnt/{nix,home,boot}
 mount -t zfs zroot/nix /mnt/nix
 mount -t zfs zroot/home /mnt/home
 
-# Mount both of the ESP's
-mount ${DISK1}-part3 /mnt/boot
+# Mount the ESP's
+mount ${DISK}3 /mnt/boot
 
 # Generate NIXOS Config in /mnt
 nixos-generate-config --root /mnt
